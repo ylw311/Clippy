@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keyboard Event Test</title>
+    <script>
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.key === 'v') {
+                document.getElementById('output').innerText = 'Ctrl+V pressed';
+            }
+            if (event.ctrlKey && event.key === 'c') {
+                document.getElementById('output').innerText = 'Ctrl+C pressed';
+            }
+        });
+    </script>
+</head>
+<body>
+    <h1>Press Ctrl+V or Ctrl+C</h1>
+    <p id="output">Waiting for input...</p>
+</body>
+</html>
