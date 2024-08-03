@@ -2,51 +2,13 @@ import logging
 from pynput import keyboard
 import pyperclip
 import platform
-<<<<<<< HEAD
 import os
 from pynput import keyboard
-
-# Set up logging configuration
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-=======
-
 import sys
-
-sys.path.append("..")
-
 from matlab.matlab import start
 
-
+sys.path.append("..")
 FLAG = False
-
-# Detect if the platform is macOS
-IS_MAC = platform.system() == "Darwin"
-
-# Define the CONTROL key based on the OS
-CONTROL = keyboard.Key.cmd if IS_MAC else keyboard.Key.ctrl
-
-# Define key combinations
-current_keys = set()
-COMBINATION_CTRL_V = {CONTROL, "v"}
-TERMINATE_COMBINATION = {CONTROL, "p"}
-COMBINATION_CMD_V_2 = {CONTROL, "v", "1"}
-UNDO_KEY = "z"
-
-controller = keyboard.Controller()
-
-
-def undo():
-    global FLAG
-    
-    FLAG = True  # Set the flag to prevent repeat execution
-    
-    controller.press(CONTROL)
-    controller.press(UNDO_KEY)
-    controller.release(UNDO_KEY)
-    controller.release(CONTROL)
-
->>>>>>> 6e267a53657f735b0e476c8f0243936e9142322d
-
 # Detect if the platform is macOS or Windows
 IS_MAC = platform.system() == 'Darwin'
 IS_WINDOWS = platform.system() == 'Windows'
@@ -64,9 +26,23 @@ CTRL_V3_KEYS_WINDOWS = {'<51>'}  # Ctrl+V+3 using the combined representation
 TERMINATE_COMBINATION_WINDOWS = {'\x10'}  # Ctrl+P (use '\x10' for 'p')
 
 # Define key combinations for macOS
-CTRL_V_KEYS_MAC = {keyboard.Key.cmd, 'v'}  # Cmd+V
-CTRL_V1_KEYS_MAC = {keyboard.Key.cmd, 'v', '1'}  # Cmd+V+1
-TERMINATE_COMBINATION_MAC = {keyboard.Key.cmd, 'p'}  # Cmd+P
+CTRL_V_KEYS_MAC = {CONTROL, 'v'}  # Cmd+V
+CTRL_V1_KEYS_MAC = {CONTROL, 'v', '1'}  # Cmd+V+1
+TERMINATE_COMBINATION_MAC = {CONTROL, 'p'}  # Cmd+P
+UNDO_KEY = "z"
+controller = keyboard.Controller()
+
+def undo():
+    global FLAG
+    FLAG = True  # Set the flag to prevent repeat execution
+    
+    controller.press(CONTROL)
+    controller.press(UNDO_KEY)
+    controller.release(UNDO_KEY)
+    controller.release(CONTROL)
+
+# Set up logging configuration
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def show_paste_options():
     # Fetch and print clipboard content
