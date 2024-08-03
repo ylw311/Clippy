@@ -3,7 +3,6 @@ from pynput import keyboard
 import pyperclip
 import platform
 import os
-from pynput import keyboard
 import sys
 from matlab.matlab import start
 
