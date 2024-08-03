@@ -4,10 +4,16 @@ import pyperclip
 import platform
 import os
 import sys
-from matlab.matlab import start
 
 sys.path.append("..")
+
+from matlab.matlab import start
+
+
 FLAG = False
+# Detect if the platform is macOS or Windows
+IS_MAC = platform.system() == 'Darwin'
+IS_WINDOWS = platform.system() == 'Windows'
 # Detect if the platform is macOS or Windows
 IS_MAC = platform.system() == 'Darwin'
 IS_WINDOWS = platform.system() == 'Windows'
@@ -103,6 +109,8 @@ def on_press(key):
                 logging.info('Cmd+V+1 pressed (macOS)')
                 # Handle specific case for Cmd+V+1
                 logging.info('Special key combination Cmd+V+1 triggered!')
+                undo()
+                start(pyperclip.paste(), logging)
 
             # Check for terminating keys (Cmd+P)
             if all(k in current_keys for k in TERMINATE_COMBINATION_MAC):
