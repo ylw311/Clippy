@@ -32,7 +32,7 @@ TERMINATE_COMBINATION_WINDOWS = {'\x10'}  # Ctrl+P (use '\x10' for 'p')
 
 # Define key combinations for macOS
 CTRL_V_KEYS_MAC = {CONTROL, 'v'}  # Cmd+V
-CTRL_V1_KEYS_MAC = {CONTROL, 'v', '1'}  # Cmd+V+1
+CTRL_V1_SHIFT_KEYS_MAC = {CONTROL, keyboard.Key.shift, 'v', '1'}  # Cmd+V+1+Shift
 TERMINATE_COMBINATION_MAC = {CONTROL, 'p'}  # Cmd+P
 UNDO_KEY = "z"
 controller = keyboard.Controller()
@@ -105,8 +105,8 @@ def on_press(key):
                 show_paste_options()
 
             # Check for Cmd+V+1
-            if all(k in current_keys for k in CTRL_V1_KEYS_MAC):
-                logging.info('Cmd+V+1 pressed (macOS)')
+            if all(k in current_keys for k in CTRL_V1_SHIFT_KEYS_MAC):
+                logging.info('Cmd+V+1+shift pressed (macOS)')
                 # Handle specific case for Cmd+V+1
                 logging.info('Special key combination Cmd+V+1 triggered!')
                 undo()
