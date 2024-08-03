@@ -31,24 +31,25 @@ TERMINATE_COMBINATION_MAC = {CONTROL, 'p'}  # Cmd+P
 def show_paste_options():
     # Fetch and print clipboard content
     clipboard_content = pyperclip.paste()
-    logging.info(f"Clipboard content: {clipboard_content}")
+    # logging.info(f"Clipboard content: {clipboard_content}")
     logging.info(f"Clipboard content: TESTING")
 
 def on_press(key):
     logging.debug(f"Key pressed: {key}")
 
     # Handle character keys
-    if hasattr(key, 'char') and key.char is not None:
+    if hasattr(key, "char") and key.char is not None:
         current_keys.add(key.char.lower())  # Use lowercase for consistency
     else:
         # Handle special keys
         current_keys.add(str(key))  # Ensure special keys are added as strings
 
     if IS_WINDOWS:
+        print('windows')
         # Check for Ctrl+V
         if all(k in current_keys for k in CTRL_V_KEYS_WINDOWS):
             logging.info('Ctrl+V pressed (Windows)')
-            show_paste_options()
+            show_paste_options()    
 
         # Check for Ctrl+V+1
         if all(k in current_keys for k in CTRL_V1_KEYS_WINDOWS):
@@ -74,6 +75,7 @@ def on_press(key):
             os._exit(0)  # Terminate the script immediately
 
     elif IS_MAC:
+        print('macOS')
         # Check for Cmd+V
         if all(k in current_keys for k in CTRL_V_KEYS_MAC):
             logging.info('Cmd+V pressed (macOS)')
