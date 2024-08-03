@@ -6,7 +6,6 @@ logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
-
 def main():
     logging.info(
         "Script started. Listening for Ctrl+V and Ctrl+C. Press Ctrl+C to stop."
