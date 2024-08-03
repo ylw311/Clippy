@@ -9,10 +9,10 @@ set up your env file with .env.example
 For Adobe Express:
 
 ```zsh
-cd hello-world
+cd qr_code
+npm install
 npm run build
 npm run start
 ```
 
-- Create Giphy Account and set up API Key
 
