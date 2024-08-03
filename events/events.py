@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 IS_MAC = platform.system() == 'Darwin'
 IS_WINDOWS = platform.system() == 'Windows'
 
-# Define the CONTROL key based on the OS (might be useless)
+# Define the CONTROL key based on the OS
 CONTROL = keyboard.Key.cmd if IS_MAC else keyboard.Key.ctrl
 
 # Define key combinations
@@ -24,14 +24,13 @@ CTRL_V3_KEYS_WINDOWS = {'<51>'}  # Ctrl+V+3 using the combined representation
 TERMINATE_COMBINATION_WINDOWS = {'\x10'}  # Ctrl+P (use '\x10' for 'p')
 
 # Define key combinations for macOS
-CTRL_V_KEYS_MAC = {CONTROL, 'v'}  # Cmd+V
-CTRL_V1_KEYS_MAC = {CONTROL, 'v', '1'}  # Cmd+V+1
-TERMINATE_COMBINATION_MAC = {CONTROL, 'p'}  # Cmd+P
+CTRL_V_KEYS_MAC = {keyboard.Key.cmd, 'v'}  # Cmd+V
+CTRL_V1_KEYS_MAC = {keyboard.Key.cmd, 'v', '1'}  # Cmd+V+1
+TERMINATE_COMBINATION_MAC = {keyboard.Key.cmd, 'p'}  # Cmd+P
 
 def show_paste_options():
     # Fetch and print clipboard content
     clipboard_content = pyperclip.paste()
-    # logging.info(f"Clipboard content: {clipboard_content}")
     logging.info(f"Clipboard content: TESTING")
 
 def on_press(key):
@@ -42,7 +41,7 @@ def on_press(key):
         current_keys.add(key.char.lower())  # Use lowercase for consistency
     else:
         # Handle special keys
-        current_keys.add(str(key))  # Ensure special keys are added as strings
+        current_keys.add(key)  # Ensure special keys are added as actual key objects
 
     if IS_WINDOWS:
         print('windows')
@@ -99,6 +98,10 @@ def on_release(key):
         if hasattr(key, 'char') and key.char is not None:
             current_keys.remove(key.char.lower())
         else:
-            current_keys.remove(str(key))  # Ensure special keys are removed as strings
+            current_keys.remove(key)  # Ensure special keys are removed as key objects
     except KeyError:
         pass
+
+# Start the listener
+with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
+    listener.join()
