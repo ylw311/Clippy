@@ -4,12 +4,13 @@ import pyperclip
 import platform
 import os
 import sys
+from db.mongodb_vector_embedding import get_mongo_collection
+from utils.embeddings import text_to_embedding
 
 sys.path.append("..")
 
 from engine.matlab import start
 from engine.llm import query_llm
-
 from sse_server import set_qrcode
 
 
@@ -47,6 +48,32 @@ CTRL_P_KEYS_MAC = {CONTROL, "p"}  # Cmd+P
 TERMINATE_COMBINATION_MAC = {CONTROL, "p"}  # Cmd+P
 UNDO_KEY = "z"
 controller = keyboard.Controller()
+collection = get_mongo_collection()
+
+
+def capture_and_store_clipboard():
+    try:
+        clipboard_content = pyperclip.paste()
+        logging.info(f"Clipboard content: {clipboard_content}")
+
+        # Convert text to vector embedding
+        vector_embedding = text_to_embedding(clipboard_content)
+
+        # Prepare the document
+        document = {
+            "text": clipboard_content,
+            "embedding": vector_embedding
+        }
+
+        # Insert the document into the MongoDB collection
+        if collection:
+            collection.insert_one(document)
+            logging.info("Vector embedding inserted into MongoDB.")
+        else:
+            logging.error("Failed to insert vector embedding into MongoDB. Collection not available.")
+
+    except Exception as e:
+        logging.error(f"Error while processing clipboard content: {e}")
 
 
 def undo():
@@ -94,6 +121,7 @@ def on_press(key):
                 logging.info("Ctrl+V+1 pressed (Windows)")
                 # Handle specific case for Ctrl+V+1
                 logging.info("Special key combination Ctrl+V+1 triggered!")
+                capture_and_store_clipboard()
                 undo()
                 start(pyperclip.paste(), logging)
 
@@ -102,6 +130,7 @@ def on_press(key):
                 logging.info("Ctrl+V+2 pressed (Windows)")
                 # Handle specific case for Ctrl+V+2
                 logging.info("Special key combination Ctrl+V+2 triggered!")
+                capture_and_store_clipboard()
                 undo()
                 set_qrcode(pyperclip.paste())
 
@@ -110,6 +139,8 @@ def on_press(key):
                 logging.info("Ctrl+V+3 pressed (Windows)")
                 # Handle specific case for Ctrl+V+3
                 logging.info("Special key combination Ctrl+V+3 triggered!")
+                capture_and_store_clipboard()
+
 
             # Check for terminating keys (Ctrl+P)
             if all(k in current_keys for k in TERMINATE_COMBINATION_WINDOWS):
@@ -128,6 +159,7 @@ def on_press(key):
             # ):
             if all(k in current_keys for k in CTRL_U_KEYS_MAC):
                 logging.info("MATLAB (macOS)")
+                capture_and_store_clipboard()
                 undo()
                 start(pyperclip.paste(), logging)
                 
@@ -136,6 +168,7 @@ def on_press(key):
             # ):
             if all(k in current_keys for k in CTRL_O_KEYS_MAC):
                 logging.info("Adobe (macOS)")
+                capture_and_store_clipboard()
                 undo()
                 set_qrcode(pyperclip.paste())
                 
@@ -144,6 +177,7 @@ def on_press(key):
             # ):
             if all(k in current_keys for k in CTRL_P_KEYS_MAC):
                 logging.info("LLM(macOS)")
+                capture_and_store_clipboard()
                 undo()
                 # TODO: display this response somewhere in frontend
                 print(query_llm(pyperclip.paste()))
