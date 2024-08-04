@@ -77,8 +77,9 @@ export function Main() {
   return (
     <div className="overflow-y-none mx-auto flex h-dvh max-w-3xl flex-col items-center justify-center space-y-4 px-8 py-4 text-white">
       {/* PROJECT NAME */}
-      <h1 className="text-[5rem] font-extrabold tracking-tight text-white">
-        <span className="text-[hsl(280,100%,70%)]">Clippy ✂️</span>
+      <h1 className="grid text-center font-extrabold tracking-tight text-white">
+        <span className="text-[3rem] text-[hsl(280,100%,70%)]">Clippy ✂️</span>
+        <span className="text-white text-2xl">Dashboard</span>
       </h1>
 
       {/* EVENT LOG */}
@@ -90,7 +91,7 @@ export function Main() {
         >
           <AnimatePresence>
             {history?.length === 0 && (
-              <div className="flex bg-gray-800 size-full items-center p-12 text-center align-middle text-xl font-bold italic text-muted">
+              <div className="flex size-full items-center bg-gray-800 p-12 text-center align-middle text-xl font-bold italic text-muted">
                 Stop using your clipboard to start using Clippy! 📋
               </div>
             )}
