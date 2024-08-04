@@ -45,9 +45,9 @@ export function Main() {
   ]);
 
   // websocket to server
-  const url = "ws://localhost:8000/ws";
+  const url = "ws://127.0.0.1:8000/ws";
 
-  const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(url, {
+  const { sendJsonMessage, lastJsonMessage, readyState, getWebSocket } = useWebSocket(url, {
     share: false,
     shouldReconnect: () => true,
   });
@@ -59,11 +59,21 @@ export function Main() {
     }
   }, [readyState]);
 
-  // Run when a new WebSocket message is received (lastJsonMessage)
+  // useEffect(() => {
+  //   getWebSocket()?.addEventListener("message", (event) => {
+  //     console.log("Received a new message", event);
+  //     // const newMsg = JSON.parse(event.data) as Message;
+  //     // setHistory([...history, newMsg]);
+  //   })
+  // }, []);
+
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    if(!lastJsonMessage) return
     console.log(`Got a new message: ${lastJsonMessage}`);
-    setHistory([...history, JSON.parse(lastJsonMessage as string) as Message]);
+    const newMsg = JSON.parse(lastJsonMessage as string) as Message;
+    console.log(newMsg);
+    setHistory([...history, newMsg]);
   }, [lastJsonMessage]);
 
   // (auto) scroll to bottom

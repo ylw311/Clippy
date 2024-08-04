@@ -41,6 +41,7 @@ async def websocket_endpoint(websocket: WebSocket):
     # keep clearing queue
     async def check_queue():
         while True:
+            print("Checking queue")
             job = await jobs.get()
             await websocket.send_json(job)
     queue_task = asyncio.create_task(check_queue())
