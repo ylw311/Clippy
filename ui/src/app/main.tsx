@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import React, { useEffect } from "react";
 import { useRef, useState } from "react";
 import { RefreshCw } from "lucide-react";
+import useWebSocket, { ReadyState } from "react-use-websocket";
 
 type Message =
   | {
@@ -24,45 +25,45 @@ type Message =
 export function Main() {
   // history
   const [history, setHistory] = useState<Message[]>([
-    {
-      type: "text",
-      message:
-        "hi.. lorem ipsum bruh smhhi.. lorem ipsum bruh smhhi.. lorem ipsum bruh smhhi.. lorem ipsum bruh smhhi.. lorem ipsum bruh smhhi.. lorem ipsum bruh smh",
-      timestamp: subSeconds(new Date(), 3),
-    },
-    {
-      type: "choice",
-      message: [
-        { prompt: "yes", id: 1 },
-        { prompt: "no", id: 2 },
-        { prompt: "HUGGGEEE PROMPT", id: 3 },
-        { prompt: ".............................", id: 4 },
-      ],
-      disabled: true,
-      timestamp: subSeconds(new Date(), 2),
-    },
+    // {
+    //   type: "text",
+    //   message:
+    //     "hi.. lorem ipsum bruh smhhi.. lorem ipsum bruh smhhi.. lorem ipsum bruh smhhi.. lorem ipsum bruh smhhi.. lorem ipsum bruh smhhi.. lorem ipsum bruh smh",
+    //   timestamp: subSeconds(new Date(), 3),
+    // },
+    // {
+    //   type: "choice",
+    //   message: [
+    //     { prompt: "yes", id: 1 },
+    //     { prompt: "no", id: 2 },
+    //     { prompt: "HUGGGEEE PROMPT", id: 3 },
+    //     { prompt: ".............................", id: 4 },
+    //   ],
+    //   disabled: true,
+    //   timestamp: subSeconds(new Date(), 2),
+    // },
   ]);
 
   // websocket to server
   const url = "ws://localhost:8000/ws";
-  useEffect(() => {
-    const ws = new WebSocket(url);
 
-    // open
-    ws.addEventListener("open", () => {
-      console.log("connected to server");
-    });
-
-    // close
-    ws.addEventListener("close", () => {
-      console.log("disconnected from server");
-    });
-
-    // message
-    ws.addEventListener("message", (event) => {
-      console.log("received: ", event.data);
-    });
+  const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(url, {
+    share: false,
+    shouldReconnect: () => true,
   });
+
+  useEffect(() => {
+    console.log("Connection state changed");
+    if (readyState === ReadyState.OPEN) {
+      console.log("Connected to server");
+    }
+  }, [readyState]);
+
+  // Run when a new WebSocket message is received (lastJsonMessage)
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    console.log(`Got a new message: ${lastJsonMessage}`);
+  }, [lastJsonMessage]);
 
   // (auto) scroll to bottom
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -76,7 +77,7 @@ export function Main() {
   return (
     <div className="overflow-y-none mx-auto flex h-dvh max-w-3xl flex-col items-center justify-center space-y-4 px-8 py-4 text-white">
       {/* PROJECT NAME */}
-      <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-[5rem]">
+      <h1 className="text-[5rem] font-extrabold tracking-tight text-white">
         <span className="text-[hsl(280,100%,70%)]">Clippy ✂️</span>
       </h1>
 
@@ -88,6 +89,11 @@ export function Main() {
           className="flex h-full w-full flex-col overflow-y-auto overflow-x-hidden"
         >
           <AnimatePresence>
+            {history?.length === 0 && (
+              <div className="flex bg-gray-800 size-full items-center p-12 text-center align-middle text-xl font-bold italic text-muted">
+                Stop using your clipboard to start using Clippy! 📋
+              </div>
+            )}
             {history?.map((message, index) => (
               <motion.div
                 key={index}
@@ -129,28 +135,33 @@ export function Main() {
                           "align-center grid h-fit items-center",
                           // "space-y-2",
                           // "space-x-4",
-                          "gap-4 auto-rows-auto",
+                          "auto-rows-max gap-4",
                         )}
                       >
                         {message.message.map((choice) => (
-                            <Button
-                              key={choice.id}
-                              variant="outline"
-                              className="bg-gray-700 h-[70px]"
-                              onClick={() => {
-                                setHistory([
-                                  ...history,
-                                  {
-                                    type: "text",
-                                    message: `You chose ${choice.prompt}`,
-                                    timestamp: new Date(),
-                                  },
-                                ]);
-                                // websocket.send()
-                              }}
-                            >
-                              {choice.prompt}
-                            </Button>
+                          <Button
+                            key={choice.id}
+                            variant="outline"
+                            className="h-[70px] bg-gray-700"
+                            onClick={() => {
+                              setHistory([
+                                ...history,
+                                {
+                                  type: "text",
+                                  message: `You chose ${choice.prompt}`,
+                                  timestamp: new Date(),
+                                },
+                              ]);
+                              sendJsonMessage({
+                                event: "subscribe",
+                                data: {
+                                  channel: "general-chatroom",
+                                },
+                              });
+                            }}
+                          >
+                            {choice.prompt}
+                          </Button>
                         ))}
                         <span
                           onClick={() =>
