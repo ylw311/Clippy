@@ -1,4 +1,6 @@
-bun.dev
+cd ui 
+bun dev
+
 python main.py
 
 

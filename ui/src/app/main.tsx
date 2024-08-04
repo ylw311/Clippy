@@ -187,7 +187,7 @@ export function Main() {
                             ])
                           }
                         >
-                          <RefreshCw className="h-[70px] w-[70px] rounded-sm border bg-gray-700 p-2" />
+                          <RefreshCw className="h-[30px] w-[30px] rounded-sm border bg-gray-700 p-2" />
                         </span>
                       </div>
                     )}

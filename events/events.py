@@ -24,15 +24,11 @@ logging.basicConfig(
 import nest_asyncio
 import uvicorn
 from server import app
-import threading
 
 def run_server():
     logging.info("Starting FASTAPI...")
     nest_asyncio.apply()
     uvicorn.run(app, host="0.0.0.0", port=8000)
-
-server_thread = threading.Thread(target=run_server)
-server_thread.start()
 
 
 FLAG = False
@@ -45,6 +41,8 @@ IS_WINDOWS = platform.system() == "Windows"
 
 # Define the CONTROL key based on the OS
 CONTROL = keyboard.Key.cmd if IS_MAC else keyboard.Key.ctrl
+OPTION_KEY = keyboard.Key.alt if IS_MAC else keyboard.Key.ctrl
+
 
 # Define key combinations
 current_keys = set()
@@ -68,9 +66,9 @@ CTRL_O_KEYS_MAC = {CONTROL, "o"}  # Cmd+O
 # CTRL_P_KEYS_MAC = {CONTROL, "p"}  # Cmd+P
 CTRL_I_KEYS_MAC = {CONTROL, "i"}  # Cmd+I
 
-CTRL_1_KEYS_MAC = {CONTROL, "["}  # Cmd+1
-CTRL_2_KEYS_MAC = {CONTROL, "]"}  # Cmd+1
-CTRL_3_KEYS_MAC = {CONTROL, "\\"}  # Cmd+1
+CTRL_1_KEYS_MAC = {CONTROL, "1"}  # Cmd+1
+CTRL_2_KEYS_MAC = {CONTROL, "6"}  # Cmd+1
+CTRL_3_KEYS_MAC = {CONTROL, "7"}  # Cmd+1
 
 TERMINATE_COMBINATION_MAC = {CONTROL, "p"}  # Cmd+P
 UNDO_KEY = "z"
@@ -148,26 +146,26 @@ def on_press(key):
                 logging.info("Cmd+V pressed (macOS)")
                 show_paste_options()
 
-            # if all(k in current_keys for k in CTRL_V1_SHIFT_KEYS_MAC) and any(
-            #     k in current_keys for k in SHIFT_KEYS
-            # ):
-            if all(k in current_keys for k in CTRL_1_KEYS_MAC):
+            if all(k in current_keys for k in CTRL_1_KEYS_MAC) and any(
+                k in current_keys for k in SHIFT_KEYS
+            ):
+            # if all(k in current_keys for k in CTRL_1_KEYS_MAC):
                 logging.info("MATLAB (macOS)")
-                undo()
                 start(pyperclip.paste(), logging)
                 
-            # if all(k in current_keys for k in CTRL_V2_SHIFT_KEYS_MAC) and any(
-            #     k in current_keys for k in SHIFT_KEYS
-            # ):
-            if all(k in current_keys for k in CTRL_2_KEYS_MAC):
+            if all(k in current_keys for k in CTRL_2_KEYS_MAC) and any(
+                k in current_keys for k in SHIFT_KEYS
+            ):
+            # if all(k in current_keys for k in CTRL_2_KEYS_MAC):
                 logging.info("Adobe (macOS)")
                 # set_qrcode(pyperclip.paste())
-            # if all(k in current_keys for k in CTRL_V4_SHIFT_KEYS_MAC) and any(
-            #     k in current_keys for k in SHIFT_KEYS
-            # ):
-            if all(k in current_keys for k in CTRL_3_KEYS_MAC):
+            
+            if all(k in current_keys for k in CTRL_3_KEYS_MAC) and any(
+                k in current_keys for k in SHIFT_KEYS
+            ):
+            # if all(k in current_keys for k in CTRL_3_KEYS_MAC):
                 logging.info("LLM(macOS)")
-                undo()
+                # undo()
                 # send job to frontend
                 res = query_llm(pyperclip.paste())
                 
@@ -208,9 +206,9 @@ def on_press(key):
                     msgs = []
                     
                     msgs.append(validation.create_message("CMD+V: paste content"))
-                    msgs.append(validation.create_message("CMD+[: generate MatLab code and Run"))
-                    msgs.append(validation.create_message("CMD+]: insert component in Adobe"))
-                    msgs.append(validation.create_message("CMD+\: query LLM"))
+                    msgs.append(validation.create_message("CMD+shift+1: generate MatLab code"))
+                    msgs.append(validation.create_message("CMD+shift+6: insert component in Adobe"))
+                    msgs.append(validation.create_message("CMD+shift+7: query LLM"))
         
                     logging.info("Cmd+C pressed (macOS)")
                     message = {
@@ -253,5 +251,5 @@ def on_release(key):
 
 
 # Start the listener
-with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
-    listener.join()
+# with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
+#     listener.join()
