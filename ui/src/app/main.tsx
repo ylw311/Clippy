@@ -63,6 +63,7 @@ export function Main() {
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     console.log(`Got a new message: ${lastJsonMessage}`);
+    setHistory([...history, JSON.parse(lastJsonMessage as string) as Message]);
   }, [lastJsonMessage]);
 
   // (auto) scroll to bottom
@@ -79,7 +80,7 @@ export function Main() {
       {/* PROJECT NAME */}
       <h1 className="grid text-center font-extrabold tracking-tight text-white">
         <span className="text-[3rem] text-[hsl(280,100%,70%)]">Clippy ✂️</span>
-        <span className="text-white text-2xl">Dashboard</span>
+        <span className="text-2xl text-white">Dashboard</span>
       </h1>
 
       {/* EVENT LOG */}
