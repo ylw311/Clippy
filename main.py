@@ -2,8 +2,8 @@ import logging
 from events.events import on_press, on_release
 from pynput import keyboard
 
-
-
+from events.events import run_server
+import threading
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -22,5 +22,9 @@ def main():
 
 if __name__ == "__main__":
     logging.info("Starting main function...")
+    
+    server_thread = threading.Thread(target=run_server)
+    server_thread.start()
+
     main()
     logging.info("Script ended.")
