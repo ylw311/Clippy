@@ -1,8 +1,8 @@
 import os
-from pymongo import MongoClient
+from pymongo.mongo_client import MongoClient
 from dotenv import load_dotenv
 
-# # Load environment variables from .env file
+# Load environment variables from .env file
 load_dotenv()
 
 def get_mongo_collection():

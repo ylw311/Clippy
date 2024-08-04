@@ -11,7 +11,7 @@ sys.path.append("..")
 
 from engine.matlab import start
 from engine.llm import query_llm
-from sse_server import set_qrcode
+from server import set_qrcode
 
 
 FLAG = False
@@ -133,6 +133,7 @@ def on_press(key):
                 capture_and_store_clipboard()
                 undo()
                 set_qrcode(pyperclip.paste())
+                logging.info("QR code set")
 
             # Check for Ctrl+V+3
             if all(k in current_keys for k in CTRL_V3_KEYS_WINDOWS):
@@ -171,7 +172,7 @@ def on_press(key):
                 capture_and_store_clipboard()
                 undo()
                 set_qrcode(pyperclip.paste())
-                
+                logging.info("QR code set")
             # if all(k in current_keys for k in CTRL_V4_SHIFT_KEYS_MAC) and any(
             #     k in current_keys for k in SHIFT_KEYS
             # ):

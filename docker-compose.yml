@@ -1,0 +1,14 @@
+services:
+  rabbit:
+    image: docker.io/rabbitmq:3.13-management
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
