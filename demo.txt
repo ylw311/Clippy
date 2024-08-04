@@ -2,5 +2,3 @@ cd ui
 bun dev
 
 python main.py
-
-
