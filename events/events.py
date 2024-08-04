@@ -4,13 +4,35 @@ import pyperclip
 import platform
 import os
 import sys
+import json
+from datetime import datetime
+
 
 sys.path.append("..")
-
 from engine.matlab import start
 from engine.llm import query_llm
+from server import jobs
+import validation
 
-from server import set_qrcode
+
+# Set up logging configuration
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+    
+import nest_asyncio
+import uvicorn
+from server import app
+import threading
+
+def run_server():
+    logging.info("Starting FASTAPI...")
+    nest_asyncio.apply()
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+server_thread = threading.Thread(target=run_server)
+server_thread.start()
 
 
 FLAG = False
@@ -35,6 +57,7 @@ TERMINATE_COMBINATION_WINDOWS = {"\x10"}  # Ctrl+P (use '\x10' for 'p')
 
 # Define key combinations for macOS
 CTRL_V_KEYS_MAC = {CONTROL, "v"}  # Cmd+V
+CTRL_C_KEYS_MAC = {CONTROL, "c"}  # Cmd+V
 # CTRL_V1_SHIFT_KEYS_MAC = {CONTROL, "v", "1"}  # Cmd+V+1
 # CTRL_V2_SHIFT_KEYS_MAC = {CONTROL, "v", "2"} 
 # CTRL_V4_SHIFT_KEYS_MAC = {CONTROL, "v", "5"}
@@ -59,10 +82,6 @@ def undo():
     controller.release(CONTROL)
 
 
-# Set up logging configuration
-logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s"
-)
 
 
 def show_paste_options():
@@ -137,8 +156,7 @@ def on_press(key):
             # ):
             if all(k in current_keys for k in CTRL_O_KEYS_MAC):
                 logging.info("Adobe (macOS)")
-                set_qrcode(pyperclip.paste())
-                logging.info("QR code set")
+                # set_qrcode(pyperclip.paste())
             # if all(k in current_keys for k in CTRL_V4_SHIFT_KEYS_MAC) and any(
             #     k in current_keys for k in SHIFT_KEYS
             # ):
@@ -152,6 +170,56 @@ def on_press(key):
             if all(k in current_keys for k in TERMINATE_COMBINATION_MAC):
                 logging.info("Cmd+P pressed (macOS). Exiting...")
                 os._exit(0)  # Terminate the script immediately
+                
+            if all(k in current_keys for k in CTRL_C_KEYS_MAC):
+                clipboard_content = pyperclip.paste()
+                
+                if (validation.is_url(clipboard_content)):
+                    msgs = []
+                    
+                    msgs.append(validation.create_message("Use Ctrl+O to generate a QR Code in Adobe " + clipboard_content))
+        
+                    logging.info("Cmd+C pressed (macOS)")
+                    message = {
+                        "type": "choice",
+                        "message": msgs,
+                        "disabled": False,
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    
+                    jobs.put_nowait(json.dumps(message))
+                    logging.info("Message sent")
+                else:
+                    logging.info("Cmd+C pressed (macOS)")
+                    
+                    msgs = []
+                    
+                    msgs.append(validation.create_message("CMD+V: paste content"))
+                    msgs.append(validation.create_message("CMD+U: generate MatLab code and Run"))
+                    msgs.append(validation.create_message("CMD+O: insert component in Adobe"))
+                    msgs.append(validation.create_message("CMD+P: query LLM"))
+        
+                    logging.info("Cmd+C pressed (macOS)")
+                    message = {
+                        "type": "choice",
+                        "message": msgs,
+                        "disabled": False,
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    
+                    jobs.put_nowait(json.dumps(message))
+                    logging.info("Message sent 2")
+                    
+                    
+                    
+                    # message = {
+                    #     "type": "text",
+                    #     "message": clipboard_content,
+                    #     "timestamp": datetime.now().isoformat()
+                    # }
+                    
+                    # jobs.put_nowait(json.dumps(message))
+                    
 
 
 def on_release(key):
