@@ -62,12 +62,22 @@ CTRL_V_KEYS_MAC = {CONTROL, "v"}  # Cmd+V
 CTRL_C_KEYS_MAC = {CONTROL, "c"}  # Cmd+V
 # CTRL_V1_SHIFT_KEYS_MAC = {CONTROL, "v", "1"}  # Cmd+V+1
 # CTRL_V2_SHIFT_KEYS_MAC = {CONTROL, "v", "2"} 
+<<<<<<< HEAD
 # CTRL_V3_SHIFT_KEYS_MAC = {CONTROL, "v", "3"}
 # SHIFT_KEYS = {keyboard.Key.shift, keyboard.Key.shift_r}  # Left and Right Shift
+=======
+# CTRL_V4_SHIFT_KEYS_MAC = {CONTROL, "v", "5"}
+SHIFT_KEYS = {keyboard.Key.shift, keyboard.Key.shift_r}  # Left and Right Shift
+>>>>>>> 4859c2575676501a7780533243c8607f59030a09
 
 CTRL_U_KEYS_MAC = {CONTROL, "u"}  # Cmd+U
 CTRL_O_KEYS_MAC = {CONTROL, "o"}  # Cmd+O
-CTRL_P_KEYS_MAC = {CONTROL, "p"}  # Cmd+P
+# CTRL_P_KEYS_MAC = {CONTROL, "p"}  # Cmd+P
+CTRL_I_KEYS_MAC = {CONTROL, "i"}  # Cmd+I
+
+CTRL_1_KEYS_MAC = {CONTROL, "["}  # Cmd+1
+CTRL_2_KEYS_MAC = {CONTROL, "]"}  # Cmd+1
+CTRL_3_KEYS_MAC = {CONTROL, "\\"}  # Cmd+1
 
 TERMINATE_COMBINATION_MAC = {CONTROL, "p"}  # Cmd+P
 UNDO_KEY = "z"
@@ -151,7 +161,7 @@ def on_press(key):
                 logging.info("Special key combination Ctrl+V+2 triggered!")
                 capture_and_store_clipboard()
                 undo()
-                set_qrcode(pyperclip.paste())
+                # set_qrcode(pyperclip.paste())
                 logging.info("QR code set")
 
             # Check for Ctrl+V+3
@@ -181,7 +191,7 @@ def on_press(key):
             # if all(k in current_keys for k in CTRL_V1_SHIFT_KEYS_MAC) and any(
             #     k in current_keys for k in SHIFT_KEYS
             # ):
-            if all(k in current_keys for k in CTRL_U_KEYS_MAC):
+            if all(k in current_keys for k in CTRL_1_KEYS_MAC):
                 logging.info("MATLAB (macOS)")
                 capture_and_store_clipboard()
                 undo()
@@ -190,7 +200,7 @@ def on_press(key):
             # if all(k in current_keys for k in CTRL_V2_SHIFT_KEYS_MAC) and any(
             #     k in current_keys for k in SHIFT_KEYS
             # ):
-            if all(k in current_keys for k in CTRL_O_KEYS_MAC):
+            if all(k in current_keys for k in CTRL_2_KEYS_MAC):
                 logging.info("Adobe (macOS)")
                 capture_and_store_clipboard()
                 undo()
@@ -199,15 +209,26 @@ def on_press(key):
             # if all(k in current_keys for k in CTRL_V4_SHIFT_KEYS_MAC) and any(
             #     k in current_keys for k in SHIFT_KEYS
             # ):
-            if all(k in current_keys for k in CTRL_P_KEYS_MAC):
+            if all(k in current_keys for k in CTRL_3_KEYS_MAC):
                 logging.info("LLM(macOS)")
                 clipboard_content = pyperclip.paste()
                 capture_and_store_clipboard()
                 undo()
-                response = query_llm(clipboard_content, collection)
-                print("Generated response:", response)
-                logging.info("Response generated and displayed.")        
 
+                # send job to frontend
+                res = query_llm(clipboard_content, collection)
+
+                print("Generated response:", response)
+                logging.info("Response generated and displayed.")     
+                
+                message = {
+                    "type": "text",
+                    "message": res,
+                    "timestamp": datetime.now().isoformat()
+                }
+                
+                jobs.put_nowait(json.dumps(message))
+                
             # Check for terminating keys (Cmd+P)
             if all(k in current_keys for k in TERMINATE_COMBINATION_MAC):
                 logging.info("Cmd+P pressed (macOS). Exiting...")
@@ -237,9 +258,9 @@ def on_press(key):
                     msgs = []
                     
                     msgs.append(validation.create_message("CMD+V: paste content"))
-                    msgs.append(validation.create_message("CMD+U: generate MatLab code and Run"))
-                    msgs.append(validation.create_message("CMD+O: insert component in Adobe"))
-                    msgs.append(validation.create_message("CMD+P: query LLM"))
+                    msgs.append(validation.create_message("CMD+[: generate MatLab code and Run"))
+                    msgs.append(validation.create_message("CMD+]: insert component in Adobe"))
+                    msgs.append(validation.create_message("CMD+\: query LLM"))
         
                     logging.info("Cmd+C pressed (macOS)")
                     message = {
