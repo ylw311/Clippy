@@ -4,6 +4,8 @@ import pyperclip
 import platform
 import os
 import sys
+from db.mongodb_vector_embedding import get_mongo_collection
+from utils.embeddings import text_to_embedding
 import json
 from datetime import datetime
 
@@ -11,6 +13,7 @@ from datetime import datetime
 sys.path.append("..")
 from engine.matlab import start
 from engine.llm import query_llm
+from server import set_qrcode
 from server import jobs
 import validation
 
@@ -19,7 +22,6 @@ import validation
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
-
     
 import nest_asyncio
 import uvicorn
@@ -60,8 +62,13 @@ CTRL_V_KEYS_MAC = {CONTROL, "v"}  # Cmd+V
 CTRL_C_KEYS_MAC = {CONTROL, "c"}  # Cmd+V
 # CTRL_V1_SHIFT_KEYS_MAC = {CONTROL, "v", "1"}  # Cmd+V+1
 # CTRL_V2_SHIFT_KEYS_MAC = {CONTROL, "v", "2"} 
+<<<<<<< HEAD
+# CTRL_V3_SHIFT_KEYS_MAC = {CONTROL, "v", "3"}
+# SHIFT_KEYS = {keyboard.Key.shift, keyboard.Key.shift_r}  # Left and Right Shift
+=======
 # CTRL_V4_SHIFT_KEYS_MAC = {CONTROL, "v", "5"}
 SHIFT_KEYS = {keyboard.Key.shift, keyboard.Key.shift_r}  # Left and Right Shift
+>>>>>>> 4859c2575676501a7780533243c8607f59030a09
 
 CTRL_U_KEYS_MAC = {CONTROL, "u"}  # Cmd+U
 CTRL_O_KEYS_MAC = {CONTROL, "o"}  # Cmd+O
@@ -75,6 +82,32 @@ CTRL_3_KEYS_MAC = {CONTROL, "\\"}  # Cmd+1
 TERMINATE_COMBINATION_MAC = {CONTROL, "p"}  # Cmd+P
 UNDO_KEY = "z"
 controller = keyboard.Controller()
+collection = get_mongo_collection()
+
+
+def capture_and_store_clipboard():
+    try:
+        clipboard_content = pyperclip.paste()
+        logging.info(f"Clipboard content: {clipboard_content}")
+
+        # Convert text to vector embedding
+        vector_embedding = text_to_embedding(clipboard_content)
+
+        # Prepare the document
+        document = {
+            "text": clipboard_content,
+            "embedding": vector_embedding
+        }
+
+        # Insert the document into the MongoDB collection
+        if collection:
+            collection.insert_one(document)
+            logging.info("Vector embedding inserted into MongoDB.")
+        else:
+            logging.error("Failed to insert vector embedding into MongoDB. Collection not available.")
+
+    except Exception as e:
+        logging.error(f"Error while processing clipboard content: {e}")
 
 
 def undo():
@@ -85,7 +118,6 @@ def undo():
     controller.press(UNDO_KEY)
     controller.release(UNDO_KEY)
     controller.release(CONTROL)
-
 
 
 
@@ -118,6 +150,7 @@ def on_press(key):
                 logging.info("Ctrl+V+1 pressed (Windows)")
                 # Handle specific case for Ctrl+V+1
                 logging.info("Special key combination Ctrl+V+1 triggered!")
+                capture_and_store_clipboard()
                 undo()
                 start(pyperclip.paste(), logging)
 
@@ -126,6 +159,7 @@ def on_press(key):
                 logging.info("Ctrl+V+2 pressed (Windows)")
                 # Handle specific case for Ctrl+V+2
                 logging.info("Special key combination Ctrl+V+2 triggered!")
+                capture_and_store_clipboard()
                 undo()
                 # set_qrcode(pyperclip.paste())
                 logging.info("QR code set")
@@ -135,6 +169,12 @@ def on_press(key):
                 logging.info("Ctrl+V+3 pressed (Windows)")
                 # Handle specific case for Ctrl+V+3
                 logging.info("Special key combination Ctrl+V+3 triggered!")
+                clipboard_content = pyperclip.paste()
+                capture_and_store_clipboard()
+                undo()
+                response = query_llm(clipboard_content, collection)
+                print("Generated response:", response)
+                logging.info("Response generated and displayed.")        
 
             # Check for terminating keys (Ctrl+P)
             if all(k in current_keys for k in TERMINATE_COMBINATION_WINDOWS):
@@ -153,6 +193,7 @@ def on_press(key):
             # ):
             if all(k in current_keys for k in CTRL_1_KEYS_MAC):
                 logging.info("MATLAB (macOS)")
+                capture_and_store_clipboard()
                 undo()
                 start(pyperclip.paste(), logging)
                 
@@ -161,15 +202,24 @@ def on_press(key):
             # ):
             if all(k in current_keys for k in CTRL_2_KEYS_MAC):
                 logging.info("Adobe (macOS)")
-                # set_qrcode(pyperclip.paste())
+                capture_and_store_clipboard()
+                undo()
+                set_qrcode(pyperclip.paste())
+                logging.info("QR code set")
             # if all(k in current_keys for k in CTRL_V4_SHIFT_KEYS_MAC) and any(
             #     k in current_keys for k in SHIFT_KEYS
             # ):
             if all(k in current_keys for k in CTRL_3_KEYS_MAC):
                 logging.info("LLM(macOS)")
+                clipboard_content = pyperclip.paste()
+                capture_and_store_clipboard()
                 undo()
+
                 # send job to frontend
-                res = query_llm(pyperclip.paste())
+                res = query_llm(clipboard_content, collection)
+
+                print("Generated response:", response)
+                logging.info("Response generated and displayed.")     
                 
                 message = {
                     "type": "text",
@@ -251,7 +301,3 @@ def on_release(key):
     except KeyError:
         pass
 
-
-# Start the listener
-with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
-    listener.join()
