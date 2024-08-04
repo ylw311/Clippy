@@ -7,7 +7,10 @@ import sys
 
 sys.path.append("..")
 
-from matlab.matlab import start
+from engine.matlab import start
+from engine.llm import query_llm
+
+from sse_server import set_qrcode
 
 
 FLAG = False
@@ -32,8 +35,15 @@ TERMINATE_COMBINATION_WINDOWS = {"\x10"}  # Ctrl+P (use '\x10' for 'p')
 
 # Define key combinations for macOS
 CTRL_V_KEYS_MAC = {CONTROL, "v"}  # Cmd+V
-CTRL_V1_SHIFT_KEYS_MAC = {CONTROL, "v", "1"}  # Cmd+V+1
-SHIFT_KEYS = {keyboard.Key.shift, keyboard.Key.shift_r}  # Left and Right Shift
+# CTRL_V1_SHIFT_KEYS_MAC = {CONTROL, "v", "1"}  # Cmd+V+1
+# CTRL_V2_SHIFT_KEYS_MAC = {CONTROL, "v", "2"} 
+# CTRL_V4_SHIFT_KEYS_MAC = {CONTROL, "v", "5"}
+# SHIFT_KEYS = {keyboard.Key.shift, keyboard.Key.shift_r}  # Left and Right Shift
+
+CTRL_U_KEYS_MAC = {CONTROL, "u"}  # Cmd+U
+CTRL_O_KEYS_MAC = {CONTROL, "o"}  # Cmd+O
+CTRL_P_KEYS_MAC = {CONTROL, "p"}  # Cmd+P
+
 TERMINATE_COMBINATION_MAC = {CONTROL, "p"}  # Cmd+P
 UNDO_KEY = "z"
 controller = keyboard.Controller()
@@ -92,6 +102,8 @@ def on_press(key):
                 logging.info("Ctrl+V+2 pressed (Windows)")
                 # Handle specific case for Ctrl+V+2
                 logging.info("Special key combination Ctrl+V+2 triggered!")
+                undo()
+                set_qrcode(pyperclip.paste())
 
             # Check for Ctrl+V+3
             if all(k in current_keys for k in CTRL_V3_KEYS_WINDOWS):
@@ -111,15 +123,31 @@ def on_press(key):
                 logging.info("Cmd+V pressed (macOS)")
                 show_paste_options()
 
-            if all(k in current_keys for k in CTRL_V1_SHIFT_KEYS_MAC) and any(
-                k in current_keys for k in SHIFT_KEYS
-            ):
-                logging.info("Cmd+V+1+Shift pressed (macOS)")
-                # Handle specific case for Cmd+V+1+Shift
-                logging.info("Special key combination Cmd+V+1+Shift triggered!")
+            # if all(k in current_keys for k in CTRL_V1_SHIFT_KEYS_MAC) and any(
+            #     k in current_keys for k in SHIFT_KEYS
+            # ):
+            if all(k in current_keys for k in CTRL_U_KEYS_MAC):
+                logging.info("MATLAB (macOS)")
                 undo()
                 start(pyperclip.paste(), logging)
-
+                
+            # if all(k in current_keys for k in CTRL_V2_SHIFT_KEYS_MAC) and any(
+            #     k in current_keys for k in SHIFT_KEYS
+            # ):
+            if all(k in current_keys for k in CTRL_O_KEYS_MAC):
+                logging.info("Adobe (macOS)")
+                undo()
+                set_qrcode(pyperclip.paste())
+                
+            # if all(k in current_keys for k in CTRL_V4_SHIFT_KEYS_MAC) and any(
+            #     k in current_keys for k in SHIFT_KEYS
+            # ):
+            if all(k in current_keys for k in CTRL_P_KEYS_MAC):
+                logging.info("LLM(macOS)")
+                undo()
+                # TODO: display this response somewhere in frontend
+                print(query_llm(pyperclip.paste()))
+                
             # Check for terminating keys (Cmd+P)
             if all(k in current_keys for k in TERMINATE_COMBINATION_MAC):
                 logging.info("Cmd+P pressed (macOS). Exiting...")
