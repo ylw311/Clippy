@@ -38,7 +38,7 @@ TERMINATE_COMBINATION_WINDOWS = {"\x10"}  # Ctrl+P (use '\x10' for 'p')
 CTRL_V_KEYS_MAC = {CONTROL, "v"}  # Cmd+V
 # CTRL_V1_SHIFT_KEYS_MAC = {CONTROL, "v", "1"}  # Cmd+V+1
 # CTRL_V2_SHIFT_KEYS_MAC = {CONTROL, "v", "2"} 
-# CTRL_V4_SHIFT_KEYS_MAC = {CONTROL, "v", "5"}
+# CTRL_V3_SHIFT_KEYS_MAC = {CONTROL, "v", "3"}
 # SHIFT_KEYS = {keyboard.Key.shift, keyboard.Key.shift_r}  # Left and Right Shift
 
 CTRL_U_KEYS_MAC = {CONTROL, "u"}  # Cmd+U
@@ -91,7 +91,6 @@ logging.basicConfig(
     level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
-
 def show_paste_options():
     # Fetch and print clipboard content
     clipboard_content = pyperclip.paste()
@@ -140,8 +139,12 @@ def on_press(key):
                 logging.info("Ctrl+V+3 pressed (Windows)")
                 # Handle specific case for Ctrl+V+3
                 logging.info("Special key combination Ctrl+V+3 triggered!")
+                clipboard_content = pyperclip.paste()
                 capture_and_store_clipboard()
-
+                undo()
+                response = query_llm(clipboard_content, collection)
+                print("Generated response:", response)
+                logging.info("Response generated and displayed.")        
 
             # Check for terminating keys (Ctrl+P)
             if all(k in current_keys for k in TERMINATE_COMBINATION_WINDOWS):
@@ -178,11 +181,13 @@ def on_press(key):
             # ):
             if all(k in current_keys for k in CTRL_P_KEYS_MAC):
                 logging.info("LLM(macOS)")
+                clipboard_content = pyperclip.paste()
                 capture_and_store_clipboard()
                 undo()
-                # TODO: display this response somewhere in frontend
-                print(query_llm(pyperclip.paste()))
-                
+                response = query_llm(clipboard_content, collection)
+                print("Generated response:", response)
+                logging.info("Response generated and displayed.")        
+
             # Check for terminating keys (Cmd+P)
             if all(k in current_keys for k in TERMINATE_COMBINATION_MAC):
                 logging.info("Cmd+P pressed (macOS). Exiting...")
@@ -205,7 +210,3 @@ def on_release(key):
     except KeyError:
         pass
 
-
-# Start the listener
-with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
-    listener.join()
