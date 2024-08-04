@@ -18,7 +18,8 @@ def run_matlab_code(code, logging):
         matlab = os.getenv("MATLAB_PATH")
 
         # subprocess.run([matlab, "-batch", f"run('{output_file_path}')"], check=True)
-        subprocess.run([matlab, "-r", f"run('{output_file_path}');"], check=True)
+        # subprocess.run([matlab, "-r", f"run('{output_file_path}');"], check=True)
+        subprocess.Popen([matlab,"-nojvm", "-r", f"run('{output_file_path}');"])
         logging.info("MATLAB code executed successfully.")
 
     except FileNotFoundError as e:
