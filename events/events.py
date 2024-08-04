@@ -6,12 +6,35 @@ import os
 import sys
 from db.mongodb_vector_embedding import get_mongo_collection
 from utils.embeddings import text_to_embedding
+import json
+from datetime import datetime
+
 
 sys.path.append("..")
-
 from engine.matlab import start
 from engine.llm import query_llm
 from server import set_qrcode
+from server import jobs
+import validation
+
+
+# Set up logging configuration
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
+    
+import nest_asyncio
+import uvicorn
+from server import app
+import threading
+
+def run_server():
+    logging.info("Starting FASTAPI...")
+    nest_asyncio.apply()
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+server_thread = threading.Thread(target=run_server)
+server_thread.start()
 
 
 FLAG = False
@@ -36,6 +59,7 @@ TERMINATE_COMBINATION_WINDOWS = {"\x10"}  # Ctrl+P (use '\x10' for 'p')
 
 # Define key combinations for macOS
 CTRL_V_KEYS_MAC = {CONTROL, "v"}  # Cmd+V
+CTRL_C_KEYS_MAC = {CONTROL, "c"}  # Cmd+V
 # CTRL_V1_SHIFT_KEYS_MAC = {CONTROL, "v", "1"}  # Cmd+V+1
 # CTRL_V2_SHIFT_KEYS_MAC = {CONTROL, "v", "2"} 
 # CTRL_V3_SHIFT_KEYS_MAC = {CONTROL, "v", "3"}
@@ -86,10 +110,6 @@ def undo():
     controller.release(CONTROL)
 
 
-# Set up logging configuration
-logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s"
-)
 
 def show_paste_options():
     # Fetch and print clipboard content
@@ -192,6 +212,56 @@ def on_press(key):
             if all(k in current_keys for k in TERMINATE_COMBINATION_MAC):
                 logging.info("Cmd+P pressed (macOS). Exiting...")
                 os._exit(0)  # Terminate the script immediately
+                
+            if all(k in current_keys for k in CTRL_C_KEYS_MAC):
+                clipboard_content = pyperclip.paste()
+                
+                if (validation.is_url(clipboard_content)):
+                    msgs = []
+                    
+                    msgs.append(validation.create_message("Use Ctrl+O to generate a QR Code in Adobe " + clipboard_content))
+        
+                    logging.info("Cmd+C pressed (macOS)")
+                    message = {
+                        "type": "choice",
+                        "message": msgs,
+                        "disabled": False,
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    
+                    jobs.put_nowait(json.dumps(message))
+                    logging.info("Message sent")
+                else:
+                    logging.info("Cmd+C pressed (macOS)")
+                    
+                    msgs = []
+                    
+                    msgs.append(validation.create_message("CMD+V: paste content"))
+                    msgs.append(validation.create_message("CMD+U: generate MatLab code and Run"))
+                    msgs.append(validation.create_message("CMD+O: insert component in Adobe"))
+                    msgs.append(validation.create_message("CMD+P: query LLM"))
+        
+                    logging.info("Cmd+C pressed (macOS)")
+                    message = {
+                        "type": "choice",
+                        "message": msgs,
+                        "disabled": False,
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    
+                    jobs.put_nowait(json.dumps(message))
+                    logging.info("Message sent 2")
+                    
+                    
+                    
+                    # message = {
+                    #     "type": "text",
+                    #     "message": clipboard_content,
+                    #     "timestamp": datetime.now().isoformat()
+                    # }
+                    
+                    # jobs.put_nowait(json.dumps(message))
+                    
 
 
 def on_release(key):

@@ -5,7 +5,7 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Clippy",
+  title: "✂️ Clippy",
   description: "Clippy is a clipboard manager",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
