@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { formatDistance, subSeconds } from "date-fns";
 import { AnimatePresence, motion } from "framer-motion";
 import React from "react";
 import { useRef, useState } from "react";
@@ -10,12 +11,13 @@ export function Main() {
   const [history, setHistory] = useState<
     {
       message: string;
-      timestamp: string;
+      timestamp: Date;
     }[]
   >([
     {
-      message: "hi",
-      timestamp: "now",
+      message:
+        "hi.. lorem ipsum bruh smhhi.. lorem ipsum bruh smhhi.. lorem ipsum bruh smhhi.. lorem ipsum bruh smhhi.. lorem ipsum bruh smhhi.. lorem ipsum bruh smh",
+      timestamp: subSeconds(new Date(), 3),
     },
   ]);
 
@@ -31,14 +33,14 @@ export function Main() {
   }, [history]);
 
   return (
-    <div className="overflow-y-none flex h-dvh flex-col items-center justify-center space-y-4 bg-slate-900 px-8 py-4 text-white">
+    <div className="overflow-y-none mx-auto flex h-dvh max-w-3xl flex-col items-center justify-center space-y-4 px-8 py-4 text-white">
       {/* PROJECT NAME */}
       <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-        <span className="text-[hsl(280,100%,70%)]">Clippy</span>
+        <span className="text-[hsl(280,100%,70%)]">Clippy ✂️</span>
       </h1>
 
       {/* EVENT LOG */}
-      <h2 className="text-3xl font-bold sm:text-[2rem]">Event Log</h2>
+      {/* <h2 className="text-3xl font-bold sm:text-[2rem]">Event Log</h2> */}
       <div className="flex h-full w-full flex-col overflow-y-auto overflow-x-hidden rounded-sm border">
         <div
           ref={messagesContainerRef}
@@ -74,8 +76,11 @@ export function Main() {
                     <span className="text-background text-sm">
                       {message.message}
                     </span>
-                    <span className="text-background/50 align-self-bottom h-full text-xs">
-                      {message.timestamp}
+                    <span className="text-background/50 align-self-bottom h-full text-end text-xs italic">
+                      {formatDistance(message.timestamp, new Date(), {
+                        addSuffix: true,
+                        includeSeconds: true,
+                      })}
                     </span>
                   </span>
                 </div>
@@ -90,7 +95,7 @@ export function Main() {
             ...history,
             {
               message: "hi",
-              timestamp: "now",
+              timestamp: new Date(),
             },
           ])
         }
