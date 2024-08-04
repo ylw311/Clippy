@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import React from "react";
@@ -11,10 +12,12 @@ export function Main() {
       message: string;
       timestamp: string;
     }[]
-  >([{
-    message: "hi",
-    timestamp: "now",
-  }]);
+  >([
+    {
+      message: "hi",
+      timestamp: "now",
+    },
+  ]);
 
   // scroll to bottom
 
@@ -28,7 +31,7 @@ export function Main() {
   }, [history]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center space-y-4 bg-slate-900 px-8 py-4 text-white">
+    <div className="overflow-y-none flex h-dvh flex-col items-center justify-center space-y-4 bg-slate-900 px-8 py-4 text-white">
       {/* PROJECT NAME */}
       <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
         <span className="text-[hsl(280,100%,70%)]">Clippy</span>
@@ -36,7 +39,7 @@ export function Main() {
 
       {/* EVENT LOG */}
       <h2 className="text-3xl font-bold sm:text-[2rem]">Event Log</h2>
-      <div className="w-full flex-auto rounded-sm border">
+      <div className="flex h-full w-full flex-col overflow-y-auto overflow-x-hidden rounded-sm border">
         <div
           ref={messagesContainerRef}
           className="flex h-full w-full flex-col overflow-y-auto overflow-x-hidden"
@@ -67,8 +70,13 @@ export function Main() {
                 )}
               >
                 <div className="flex items-center gap-3">
-                  <span className="bg-accent text-foreground max-w-xs rounded-md p-3">
-                    {message.message}
+                  <span className="flex max-w-xs flex-col -space-y-1 rounded-md bg-gray-700 bg-opacity-75 p-3">
+                    <span className="text-background text-sm">
+                      {message.message}
+                    </span>
+                    <span className="text-background/50 align-self-bottom h-full text-xs">
+                      {message.timestamp}
+                    </span>
                   </span>
                 </div>
               </motion.div>
@@ -76,6 +84,21 @@ export function Main() {
           </AnimatePresence>
         </div>
       </div>
+      <Button
+        onClick={() =>
+          setHistory([
+            ...history,
+            {
+              message: "hi",
+              timestamp: "now",
+            },
+          ])
+        }
+        className="w-full"
+        variant="default"
+      >
+        Add message
+      </Button>
     </div>
   );
 }
